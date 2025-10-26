@@ -17,6 +17,40 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
+// ============================================
+// 🧩 Automatická kontrola ID sekvence
+// ============================================
+async function ensureIdSequence() {
+  try {
+    console.log("🔍 Kontroluji ID sekvenci...");
+    await pool.query(`
+      DO $$
+      DECLARE
+        max_id integer;
+      BEGIN
+        SELECT COALESCE(MAX(id), 0) + 1 INTO max_id FROM battle_ids;
+        -- vytvoř sekvenci, pokud ještě neexistuje
+        IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relname = 'battle_ids_id_seq') THEN
+          EXECUTE 'CREATE SEQUENCE battle_ids_id_seq START ' || max_id;
+          EXECUTE 'ALTER TABLE battle_ids ALTER COLUMN id SET DEFAULT nextval(''battle_ids_id_seq'')';
+        ELSE
+          -- uprav sekvenci, pokud existuje
+          EXECUTE 'ALTER SEQUENCE battle_ids_id_seq RESTART WITH ' || max_id;
+        END IF;
+      END
+      $$;
+    `);
+    console.log("✅ ID sekvence ověřena nebo opravena");
+  } catch (err) {
+    console.error("⚠️ Nepodařilo se zkontrolovat sekvenci:", err);
+  }
+}
+
+// Spustí kontrolu hned po připojení
+ensureIdSequence();
+
+
+
 // ====== Middleware ======
 app.use(cors()); // aby frontend mohl komunikovat z jiné domény
 app.use(express.json());
