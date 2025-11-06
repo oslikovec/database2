@@ -17,6 +17,7 @@ const app = express();
 const allowedOrigins = [
   "https://redroofcomp.up.railway.app",
   "http://localhost:3000"
+  "database4-production.up.railway.app"
 ];
 
 app.use(cors({
