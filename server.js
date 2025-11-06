@@ -15,20 +15,27 @@ const { Pool } = pkg;
 const app = express();
 
 const allowedOrigins = [
-  "https://redroofcomp.up.railway.app",
-  "http://localhost:3000"
-  "database4-production.up.railway.app"
+  "https://redroofcomp.up.railway.app",           // frontend
+  "https://database4-production.up.railway.app",  // druhý backend
+  "https://tvuj-backend-url.up.railway.app",      // nahraď reálnou URL tohoto backendu
+  "http://localhost:3000",
+  "http://localhost:5500"
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) callback(null, true);
-    else callback(new Error("CORS blokován pro origin: " + origin));
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    console.warn("❌ CORS blokován pro origin:", origin);
+    return callback(new Error("CORS blokován pro origin: " + origin), false);
   },
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.use(express.json());
+
 
 // ==============================
 // 💾 PostgreSQL připojení
