@@ -293,6 +293,23 @@ app.post("/api/battle/:id/commendation", async (req, res) => {
   }
 });
 
+app.patch("/api/battle/:id/rank", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { new_rank } = req.body;
+
+    // Změna hodnosti v hlavní tabulce
+    await pool.query(`
+      UPDATE battle_ids SET rank=$1 WHERE id=$2
+    `, [new_rank, id]);
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // ==============================
 // 🚀 Server start
 // ==============================
